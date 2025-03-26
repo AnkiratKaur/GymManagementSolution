@@ -1,0 +1,138 @@
+﻿@model GymManagement.Models.GroupClass
+
+<partial name="_ViewHeading" />
+
+<hr />
+<partial name="_addFitnessCategoryModal" />
+<form asp-action="Edit">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="ID" />
+    <input type="hidden" asp-for="RowVersion" />
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="FitnessCategoryID" class="control-label"></label>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" id="nowAddFitnessCategory" data-bs-toggle="modal" data-bs-target="#addFitnessCategoryModal" type="button">&#x2795;</button>
+                    </div>
+                    <select asp-for="FitnessCategoryID" class="form-control" asp-items="ViewBag.FitnessCategoryID"></select>
+                    <span asp-validation-for="FitnessCategoryID" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="InstructorID" class="control-label"></label>
+                <select asp-for="InstructorID" class="form-control" asp-items="ViewBag.InstructorID"></select>
+                <span asp-validation-for="InstructorID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DOW" class="control-label"></label>
+                <select asp-for="DOW" class="form-control" asp-items="Html.GetEnumSelectList<DOW>()"></select>
+                <span asp-validation-for="DOW" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClassTimeID" class="control-label"></label>
+                <select asp-for="ClassTimeID" class="form-control" asp-items="ViewBag.ClassTimeID"></select>
+                <span asp-validation-for="ClassTimeID" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="row">
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" rows="2" class="form-control"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label"> Clients Enrolled</label> <button type="button" id="btnRight" class="btn btn-danger btn-sm">
+                        <strong>-</strong>
+                    </button>
+                    @Html.ListBox("selectedOptions", (MultiSelectList)ViewBag.selOpts, new { @size = 10, @class = "form-control" })
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label class="control-label"> Choose Clients</label> <button type="button" id="btnLeft" class="btn btn-success btn-sm">
+                        <strong>+</strong>
+                    </button>
+                    @Html.ListBox("availOptions", (MultiSelectList)ViewBag.availOpts, new { @size = 10, @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="submit" id="btnSubmit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>
+    <partial name="_BackToList" />
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/multiselect.js"></script>
+    <script src="~/js/refreshDDL.js"></script>
+
+    @* Fitness Category Modal *@
+    <script type="text/javascript">
+        $('#submitFitnessCategoryCreate').click(function (event) {
+            event.preventDefault();
+            ClearErrors();
+            var form = $('#createFitnessCategoryForm');
+            if (form.valid()) {
+                $.ajax({
+                    type: "POST",
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function () {
+                        $('#addFitnessCategoryModal').modal('hide');
+                    },
+                    error: function (xhr) { //Note: xhr is the XMLHttpRequest
+                        var errorMessages = [];
+                        switch (xhr.status) {
+                            case 401:
+                                errorMessages.push("You must be logged in first.");
+                                break;
+                            case 403:
+                                errorMessages.push("You are not authorized for this action.");
+                                break;
+                            default:
+                                //Messages coming from the Model State Errors
+                                //We split on the | delimeter and the .slice removes the last one
+                                errorMessages = xhr.responseText.split("|").slice(0, -1);
+                        }
+                        //This checks if there are any elements with some content
+                        //and if not then it provides a default feedback message.
+                        if (!errorMessages.some((str) => str !== "")) {
+                            errorMessages.push("Error: Unable to complete operation");
+                        }
+                        //Put the messages in the ErrorList ul contained in the 'ValidaitonSummary' div.
+                        var ul = document.getElementById("ErrorList");
+                        for (var i = 0; i < errorMessages.length; i++) {
+                            var errorMessage = errorMessages[i];
+                            var li = document.createElement("li");
+                            li.innerHTML = errorMessage;
+                            ul.appendChild(li);
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+        $('#addFitnessCategoryModal').on('hide.bs.modal', function () {
+            document.getElementById("createFitnessCategoryForm").reset();//to clear the data in the popup form
+            ClearErrors();
+            var selectedOption = $('#FitnessCategoryID').val();//Return to the current selected value
+            refreshDDL('FitnessCategoryID', '/GroupClass/GetFitnessCategories/' + selectedOption, false, null, true, 'None', true);
+        });
+        function ClearErrors() {
+            //Empty out the list of validation errors if there are any
+            var ul = document.getElementById("ErrorList");
+            while (ul.firstChild) {
+                ul.removeChild(ul.firstChild);
+            }
+        }
+    </script>
+}

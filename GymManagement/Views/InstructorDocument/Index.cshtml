@@ -1,0 +1,118 @@
+﻿@model IEnumerable<GymManagement.Models.InstructorDocument>
+
+<partial name="_ViewHeading" />
+
+<form asp-action="Index" method="get">
+    <div class="form-horizontal">
+        <button class="btn @ViewData["Filtering"]" type="button" data-bs-toggle="collapse" id="filterToggle" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+            Filter/Search @ViewData["numberFilters"]
+        </button><br />
+        <div class="collapse @ViewData["ShowFilter"]" id="collapseFilter">
+            <div class="card card-body bg-light">
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Search File Name:</label>
+                        @Html.TextBox("SearchFileName", null, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Filter by Instructor:</label>
+                        @Html.DropDownList("InstructorID", null, "All Instructors", htmlAttributes: new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Search Description:</label>
+                        @Html.TextBox("SearchString", null, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4 align-self-end">
+                        <input type="submit" name="actionButton" value="Filter" class="btn btn-outline-primary" />
+                        <a asp-action="Index" class="btn btn-outline-dark">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Instructor)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FileName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MimeType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <a asp-controller="Instructor" asp-action="Details" asp-route-id="@item.InstructorID">
+                @Html.DisplayFor(modelItem => item.Instructor.Summary)
+                </a>
+            </td>
+            <td>
+                <a asp-action="Download" asp-route-id="@item.ID">@item.FileName</a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MimeType)
+            </td>
+            <td>
+                @{
+                    if (item.Description != null)
+                    {
+                        string[] noteWords = item.Description.Split(' ');
+                        if (noteWords.Count() > 5)
+                        {
+                            <a class="" role="button" data-bs-toggle="collapse" href="#collapseSum@(item.ID)" aria-expanded="false" aria-controls="collapseSum@(item.ID)">
+                                @(string.Join(" ", noteWords.Take(5)) + "...")
+                            </a>
+                            <div class="collapse" id="collapseSum@(item.ID)">
+                                <div class="well">
+                                    @(string.Join(" ", noteWords.Skip(5)))
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            @item.Description
+                        }
+                    }
+                }
+            </td>
+
+            <td class="text-center">
+                @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-outline-primary"
+                        role="button" data-bs-toggle="tooltip" title="Edit @ViewData["ControllerFriendlyName"]">
+                        &#x270E;
+                    </a>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                     <a asp-action="Delete" asp-route-id="@item.ID" class="btn btn-sm btn-outline-primary"
+                         role="button" data-bs-toggle="tooltip" title="Delete @ViewData["ControllerFriendlyName"]">
+                         &#x274C;
+                     </a>
+                }
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+    <partial name="_PagingNavBar" />
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

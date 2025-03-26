@@ -1,0 +1,45 @@
+﻿@model GymManagement.Models.InstructorDocument
+
+<partial name="_ViewHeading" />
+
+<hr />
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="ID" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <strong>@Html.DisplayNameFor(model => model.Instructor)</strong><br>
+                @Html.DisplayFor(model => model.Instructor.Summary)
+            </div>
+            <div class="form-group">
+                <label asp-for="FileName" class="control-label"></label>
+                <input asp-for="FileName" class="form-control" />
+                <span asp-validation-for="FileName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <strong>@Html.DisplayNameFor(model => model.MimeType)</strong><br>
+                @Html.DisplayFor(model => model.MimeType)
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>
+    <partial name="_BackToList" />
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

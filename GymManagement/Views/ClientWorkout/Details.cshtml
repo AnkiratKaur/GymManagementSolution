@@ -1,0 +1,77 @@
+﻿@model GymManagement.Models.Workout
+
+@{
+    ViewData["Title"] = "Workout Details";
+}
+
+<h2>Workout Details for Client:  @Model.Client.Summary</h2>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StartTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StartDateSummary)
+            @Html.DisplayFor(model => model.StartTimeSummary)
+            <span class="break-word">
+                (@Html.DisplayFor(model => model.DurationSummary))
+            </span>
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EndTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.EndTimeSummary)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Notes)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Notes)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Instructor)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Instructor.Summary)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.WorkoutExercises)
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                var exercises = Model.WorkoutExercises.ToList();
+                int exerciseCount = exercises.Count;
+                if (exerciseCount > 0)
+                {
+                    string firstExercise = exercises[0].Exercise.Summary;
+                    if (exerciseCount > 1)
+                    {
+                        string exerciseList = "";
+                        for (int i = 1; i < exerciseCount; i++)//Skip the first because we have it already
+                        {
+                            exerciseList += exercises[i].Exercise.Summary + " <br />";
+                        }
+                        <a class="" role="button" data-bs-toggle="collapse" href="#collapseHistory@(Model.ID)"
+                           aria-expanded="false" aria-controls="collapseHistory@(Model.ID)">
+                            @firstExercise <span class="badge bg-info">@exerciseCount</span>
+                        </a>
+                        <div class="collapse" id="collapseHistory@(Model.ID)">
+                            @Html.Raw(exerciseList)
+                        </div>
+                    }
+                    else
+                    {
+                        @firstExercise
+                    }
+                }
+            }
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Update" asp-route-id="@Model?.ID">Update Workout</a> |
+    <partial name="_BackToList" />
+</div>

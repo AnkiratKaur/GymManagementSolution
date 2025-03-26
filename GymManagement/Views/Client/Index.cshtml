@@ -1,0 +1,90 @@
+﻿@model IEnumerable<GymManagement.Models.Client>
+
+<partial name="_ViewHeading" />
+
+@if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+{
+    <p>
+        <a asp-action="Create">Create New @ViewData["ControllerFriendlyName"]</a>
+    </p>
+}
+@if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+{
+    <a asp-controller="Client" asp-action="Notification" class="btn btn-info float-end">Send Email Notification</a>
+}
+<form asp-action="Index" method="get">
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="d-none d-md-table-cell">
+                    @Html.DisplayNameFor(model => model.MembershipNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Summary)
+                </th>
+                <th class="d-none d-lg-table-cell">
+                    @Html.DisplayNameFor(model => model.PhoneFormatted)
+                </th>
+                <th class="d-none d-lg-table-cell">
+                    @Html.DisplayNameFor(model => model.Age)
+                </th>
+                <th class="d-none d-xl-table-cell">
+                    @Html.DisplayNameFor(model => model.MembershipStatus)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @{
+                            if (item.ClientThumbnail?.Content != null)
+                            {
+                                string imageBase64 = Convert.ToBase64String(item.ClientThumbnail.Content);
+                                string imageSrc = string.Format("data:" + item.ClientThumbnail.MimeType + ";base64,{0}", imageBase64);
+                                <img src="@imageSrc" alt="Profile Picture of @item?.Summary"
+                                     title="Profile Picture of @item?.Summary" class="img-fluid rounded" />
+                            }
+                        }
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        @Html.DisplayFor(modelItem => item.MembershipNumber)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Summary)
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        @Html.DisplayFor(modelItem => item.PhoneFormatted)
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        @Html.DisplayFor(modelItem => item.Age)
+                    </td>
+                    <td class="d-none d-xl-table-cell">
+                        @Html.DisplayFor(modelItem => item.MembershipStatus)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
+                        <a asp-controller="ClientWorkout" asp-action="Index" asp-route-ClientID="@item.ID">Details</a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                           <span>|</span> <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <partial name="_PagingNavBar" />
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

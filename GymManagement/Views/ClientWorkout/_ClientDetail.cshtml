@@ -1,0 +1,147 @@
+﻿@model GymManagement.Models.Client
+
+<figure class="row">
+    <p class="col-auto">
+        @{
+            if (Model.ClientThumbnail?.Content != null)
+            {
+                string imageBase64 = Convert.ToBase64String(Model.ClientThumbnail.Content);
+                string imageSrc = string.Format("data:" + Model.ClientThumbnail.MimeType + ";base64,{0}", imageBase64);
+                <img src="@imageSrc" alt="Profile Picture of @Model.Summary" title="Profile Picture of @Model.Summary" class="img-fluid rounded" />
+            }
+            else
+            {
+                <img src="~/images/blankProfile.jpg" style="max-height: 80px; max-width: 96px" class="img-fluid rounded" />
+            }
+        }
+    </p>
+    <figcaption class="col mt-3"><h3><text class="d-none d-sm-inline">Client: </text>@Model.Summary</h3></figcaption>
+</figure>
+<div class="row">
+    <div class="col-4">
+        <dl class="row">
+            <dt class="col-md-4">
+                @Html.DisplayNameFor(model => model.MembershipNumber)
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => model.MembershipNumber)
+            </dd>
+            <dt class="col-md-4">
+                @Html.DisplayNameFor(model => Model.FullFormalName)
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => Model.FullFormalName)
+            </dd>
+            <dt class="col-md-4">
+                @Html.DisplayNameFor(model => model.AgeSummary)
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => model.AgeSummary)
+            </dd>
+            <dt class="col-md-4">
+                @Html.DisplayNameFor(model => model.MembershipStartDate)
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => model.MembershipStartDate)
+            </dd>
+            <dt class="col-md-4">
+                @Html.DisplayNameFor(model => model.MembershipEndDate)
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => model.MembershipEndDate) <br />
+                @Html.DisplayFor(model => model.MembershipStatus)
+            </dd>
+            <dt class="col-md-4">
+                Mem. Fee
+            </dt>
+            <dd class="col-md-8">
+                @Html.DisplayFor(model => model.MembershipFee) 
+                @Html.DisplayFor(model => model.FeePaid) (Paid)
+            </dd>
+        </dl>
+    </div>
+    <div class="col-8">
+        <dl class="row">
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => model.HealthCondition)
+            </dt>
+            <dd class="col-md-9">
+                @Html.DisplayFor(model => model.HealthCondition)
+            </dd>
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => model.PostalCode)
+            </dt>
+            <dd class="col-md-9">
+                @Html.DisplayFor(model => model.PostalCode)
+            </dd>
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => Model.Phone)
+            </dt>
+            <dd class="col-md-9">
+                @Html.DisplayFor(model => Model.PhoneFormatted)
+            </dd>
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => Model.Email)
+            </dt>
+            <dd class="col-md-9">
+                @Html.DisplayFor(model => Model.Email)
+            </dd>
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => model.Notes)
+            </dt>
+            <dd class="col-md-9">
+                @{
+                    string[] noteWords = Model.Notes.Split(' ');
+                    if (noteWords.Count() > 5)
+                    {
+                        <a class="" role="button" data-bs-toggle="collapse" href="#collapseSum@(Model.ID)" aria-expanded="false" aria-controls="collapseSum@(Model.ID)">
+                            @(string.Join(" ", noteWords.Take(5)) + "...")
+                        </a>
+                        <div class="collapse" id="collapseSum@(Model.ID)">
+                            <div class="well">
+                                @(string.Join(" ", noteWords.Skip(5)))
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @Model.Notes
+                    }
+                }
+            </dd>
+            <dt class="col-md-3">
+                @Html.DisplayNameFor(model => Model.Enrollments)
+            </dt>
+            <dd class="col-md-9">
+                @{
+                    int enrollmentCount = Model.Enrollments.Count;
+                    if (enrollmentCount > 0)
+                    {
+                        string firstEnrollment = Model.Enrollments.FirstOrDefault().GroupClass.Summary;
+                        if (enrollmentCount > 1)
+                        {
+                            string enrollmentList = "";
+                            var c = Model.Enrollments.ToList();
+                            for (int i = 1; i < enrollmentCount; i++)//Skip the first because we have it already
+                            {
+                                enrollmentList += c[i].GroupClass.Summary + " <br />";
+                            }
+                            <a class="" role="button" data-bs-toggle="collapse" href="#collapseHistory@(Model.ID)"
+                               aria-expanded="false" aria-controls="collapseHistory@(Model.ID)">
+                                @firstEnrollment <span class="badge bg-info">@enrollmentCount</span>
+                            </a>
+                            <div class="collapse" id="collapseHistory@(Model.ID)">
+                                @Html.Raw(enrollmentList)
+                            </div>
+                        }
+                        else
+                        {
+                            @firstEnrollment
+                        }
+                    }
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+

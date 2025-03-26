@@ -1,0 +1,58 @@
+﻿@{
+    ViewData["Title"] = "Notification Email";
+}
+
+<h1>Send Promotional Emails</h1>
+
+<hr />
+<div class="text-danger">@ViewData["Message"]</div>
+<br />
+<form asp-action="Notification">
+    <div class="row">
+        <div class="col-md-8">
+            <h4 class="card-header">Send Promotional Email</h4>
+            <div class="card bg-gradient p-3" style="min-width: 18rem;">
+            <div class="form-group">
+               <label for="Subject" class="control-label">Email Subject</label>
+                <input type="text" id="Subject" name="Subject" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="emailContent" class="control-label">Message Content</label>
+                <textarea id="emailContent" name="emailContent" rows="12" cols="26" class="form-control"></textarea>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Send" class="btn btn-primary" />
+                <a asp-action="ResetForm" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label">Choose Clients:</label>
+                <button type="button" id="btnLeft" class="btn btn-success btn-sm">
+                    <strong>+</strong>
+                </button>
+                @Html.ListBox("availOptions", (MultiSelectList)ViewBag.availOpts, new { @size = 9, @class = "form-control" })
+            </div>
+            <div class="form-group">
+                <label class="control-label">Selected Clients:</label>
+                <button type="button" id="btnRight" class="btn btn-danger btn-sm">
+                    <strong>-</strong>
+                </button>
+                @Html.ListBox("selectedOptions", (MultiSelectList)ViewBag.selOpts, new { @size = 9, @class = "form-control" })
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<div>
+    <partial name="_BackToList" />
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/multiselect.js"></script>
+}

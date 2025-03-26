@@ -1,0 +1,157 @@
+﻿@model IEnumerable<GymManagement.Models.GroupClass>
+
+<partial name="_ViewHeading" />
+
+@if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+{
+    <p>
+        <a asp-action="Create">Create New @ViewData["ControllerFriendlyName"]</a>
+    </p>
+}
+
+<form asp-action="Index" method="get">
+    <input type="hidden" name="sortDirection" value="@ViewData["sortDirection"]" />
+    <input type="hidden" name="sortField" value="@ViewData["sortField"]" />
+    <div class="form-horizontal">
+        <button class="btn @ViewData["Filtering"]" type="button" data-bs-toggle="collapse" id="filterToggle"
+                data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+            Filter/Search @ViewData["numberFilters"]
+        </button><br />
+        <div class="collapse @ViewData["ShowFilter"]" id="collapseFilter">
+            <div class="card card-body bg-light">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label">Filter by Fitness Category:</label>
+                            @Html.DropDownList("FitnessCategoryID", null, "All Categories",
+                                     htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Filter by Day of Week:</label>
+                        @Html.DropDownList("DOWFilter", (SelectList)ViewBag.DOWSelectList,
+                                 "Any Day", htmlAttributes: new { @class = "form-control" })
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label">Filter by Class Time:</label>
+                            @Html.DropDownList("ClassTimeID", null, "Any Time",
+                                     htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Filter by Instructor:</label>
+                        @Html.DropDownList("InstructorID", null, "All Instructors",
+                                 htmlAttributes: new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Search Description:</label>
+                        @Html.TextBox("SearchString", null, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-2 align-self-end">
+                        <input type="submit" name="actionButton" value="Filter"
+                               class="btn btn-outline-primary" />
+                        <a asp-action="Index" class="btn btn-outline-dark">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <input type="submit" name="actionButton" value="Class" class="btn btn-link" />
+                </th>
+                <th>
+                    <input type="submit" name="actionButton" value="Instructor" class="btn btn-link" />
+                </th>
+                <th class="d-none d-md-table-cell">
+                    <input type="submit" value="Description" class="btn btn-toolbar" />
+                </th>
+                @if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+                {
+                    <th class="d-none d-lg-table-cell">
+                        <input type="submit" value="Enrollments" class="btn btn-toolbar" />
+                    </th>
+                }
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Summary)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Instructor.FormalName)
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        @Html.DisplayFor(modelItem => item.ShortDescription)
+                    </td>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+                    {
+                        <td class="d-none d-lg-table-cell">
+                            @{
+                                int clientCount = item.Enrollments.Count;
+                                if (clientCount > 0)
+                                {
+                                    string firstClient = item.Enrollments.FirstOrDefault().Client.FormalName;
+                                    if (clientCount > 1)
+                                    {
+                                        string clientList = "";//Html string of Client names separated by <br /> tags
+                                        var c = item.Enrollments.ToList();
+                                        for (int i = 1; i < clientCount; i++)//Skip the first because we have it already
+                                        {
+                                            clientList += c[i].Client.FormalName + " <br />";
+                                        }
+                                        <a class="" role="button" data-bs-toggle="collapse" href="#collapseClients@(item.ID)"
+                                           aria-expanded="false" aria-controls="collapseClients@(item.ID)">
+                                            @firstClient <span class="badge bg-info">@clientCount</span>
+                                        </a>
+                                        <div class="collapse" id="collapseClients@(item.ID)">
+                                            @Html.Raw(clientList)
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @firstClient
+                                    }
+                                }
+                            }
+                        </td>
+                    }
+                    <td>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+                        {
+                            <span>
+                                <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.ID">Details</a>
+                            </span>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                           <span> | </span> <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                         }
+                            
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <partial name="_PagingNavBar" />
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

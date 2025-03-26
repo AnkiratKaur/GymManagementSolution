@@ -1,0 +1,173 @@
+﻿@model IEnumerable<GymManagement.Models.Workout>
+
+@{
+    GymManagement.Models.Client client = (GymManagement.Models.Client)ViewBag.Client;
+    <partial name="_ClientDetail" model="client" />
+    ViewData["Title"] = ViewData["ControllerFriendlyName"];
+}
+
+<form asp-action="Index" method="get">
+    <input type="hidden" name="sortDirection" value="@ViewData["sortDirection"]" />
+    <input type="hidden" name="sortField" value="@ViewData["sortField"]" />
+    <input type="hidden" name="ClientID" value="@client.ID" />
+    <div class="form-horizontal">
+        <button class="btn @(ViewData["Filtering"])" type="button" data-bs-toggle="collapse" id="filterToggle" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+            Filter/Search @ViewData["numberFilters"]
+        </button><br />
+        <div class="collapse @ViewData["ShowFilter"]" id="collapseFilter">
+            <div class="collapse card card-body bg-light" style="padding-top: 10px; padding-bottom: 5px;" id="collapseFilter">
+                <div class="row">
+                    <div class="form-group col-md-4 ml-md-3">
+                        <label class="control-label">Instructor:</label>
+                        @Html.DropDownList("InstructorID", null, "All Instructors", htmlAttributes: new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="control-label">Search Notes:</label>
+                        @Html.TextBox("SearchString", null, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-4 align-self-end">
+                        <input type="submit" name="actionButton" value="Apply" class="btn btn-primary" />
+                        <a asp-action="Index" asp-route-ClientID="@client.ID">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <table class="table">
+                <col />
+                <col />
+                <col style="width:30%">
+                <col style="width:20%">
+                <col />
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="submit" name="actionButton" value="Workout" class="btn btn-link" />
+                        </th>
+                        <th>
+                            <input type="submit" name="actionButton" value="Instructor" class="btn btn-link" />
+                        </th>
+                        <th class="d-none d-xl-table-cell">
+                            <input type="submit" value="Notes" class="btn btn-toolbar" />
+                        </th>
+                        <th class="d-none d-lg-table-cell">
+                            <input type="submit" value="Exercises" class="btn btn-toolbar" />
+                        </th>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+                        {
+                            <th class="text-center" style="min-width:140px">
+                                <a asp-controller="ClientWorkout" asp-action="Add"
+                                   asp-route-ClientID="@client.ID" asp-route-ClientName="@client.Summary">
+                                    <span class="btn btn-success" data-bs-toggle="tooltip"
+                                          title="Add Appointment"><strong>&#x271A; Add</strong></span>
+                                </a>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.StartDateSummary)
+                                @Html.DisplayFor(modelItem => item.StartTimeSummary)
+                                <span class="break-word">
+                                    (@Html.DisplayFor(modelItem => item.DurationSummary))
+                                </span>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Instructor.Summary)
+                            </td>
+                            <td class="d-none d-xl-table-cell">
+                                @{
+                                    if (item.Notes != null)
+                                    {
+                                        string[] noteWords = item.Notes.Split(' ');
+                                        if (noteWords.Count() > 5)
+                                        {
+                                            <a class="" role="button" data-bs-toggle="collapse" href="#collapseSum@(item.ID)" aria-expanded="false" aria-controls="collapseSum@(item.ID)">
+                                                @(string.Join(" ", noteWords.Take(5)) + "...")
+                                            </a>
+                                            <div class="collapse" id="collapseSum@(item.ID)">
+                                                <div class="well">
+                                                    @(string.Join(" ", noteWords.Skip(5)))
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @item.Notes
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                @{
+                                    int exerciseCount = item.WorkoutExercises.Count;
+                                    if (exerciseCount > 0)
+                                    {
+                                        string firstExercise = item.WorkoutExercises.FirstOrDefault().Exercise.Name;
+                                        if (exerciseCount > 1)
+                                        {
+                                            string exerciseList = "";
+                                            var c = item.WorkoutExercises.ToList();
+                                            for (int i = 1; i < exerciseCount; i++)//Skip the first because we have it already
+                                            {
+                                                exerciseList += c[i].Exercise.Name + " <br />";
+                                            }
+                                            <a class="" role="button" data-bs-toggle="collapse" href="#collapseHistory@(item.ID)"
+                                               aria-expanded="false" aria-controls="collapseHistory@(item.ID)">
+                                                @firstExercise <span class="badge bg-info">@exerciseCount</span>
+                                            </a>
+                                            <div class="collapse" id="collapseHistory@(item.ID)">
+                                                @Html.Raw(exerciseList)
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @firstExercise
+                                        }
+                                    }
+                                }
+                            </td>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Supervisor") || User.IsInRole("Staff"))
+                            {
+                                <td class="text-center" style="min-width:140px">
+                                    <a asp-controller="ClientWorkout" asp-action="Update" asp-route-id="@item.ID"
+                                       class="btn btn-sm btn-outline-primary" role="button"
+                                       data-bs-toggle="tooltip" title="Edit @ViewData["ControllerFriendlyName"]">
+                                        &#x270D;
+                                    </a>
+                                    <a asp-controller="ClientWorkout" asp-action="Details" asp-route-id="@item.ID"
+                                       class="btn btn-sm btn-outline-info" role="button"
+                                       data-bs-toggle="tooltip" title="@ViewData["ControllerFriendlyName"] Details">
+                                        &#x1F50D;
+                                    </a>
+                                    <a asp-controller="ClientWorkout" asp-action="Remove" asp-route-id="@item.ID"
+                                       class="btn btn-sm btn-outline-danger" role="button"
+                                       data-bs-toggle="tooltip" title="Delete @ViewData["ControllerFriendlyName"]">
+                                        &#x274C;
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <partial name="_PagingNavBar" />
+    <div>
+        <a asp-action="Edit" asp-controller="Client" asp-route-id="@client.ID">Edit @client.Summary</a> |
+        <a href='@ViewData["returnURL"]'>Back to Client List</a>
+    </div>
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

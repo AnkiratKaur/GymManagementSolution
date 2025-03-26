@@ -1,0 +1,94 @@
+﻿@model IEnumerable<GymManagement.ViewModels.MembershipTypeSummaryVM>
+
+@{
+    ViewData["Title"] = "Membership Type Summary";
+}
+
+<h2>Membership Type Summary</h2>
+<a asp-action="MembershipTypeReport" class="btn btn-info float-end">Export to Excel</a>
+<form asp-controller="Client" asp-action="MembershipTypeSummary" method="get">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Membership_Type)
+                    @{
+                        double totalFees = 0d;
+                        int totalClients = 0;
+                    }
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Number_Of_Clients)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Average_Fee)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Highest_Fee)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Lowest_Fee)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Total_Fees)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Membership_Type)
+                        @{
+                            totalFees += item.Total_Fees;
+                            totalClients += item.Number_Of_Clients;
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Number_Of_Clients)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Average_Fee)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Highest_Fee)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Lowest_Fee)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Total_Fees)
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td align="right">
+                    Total Number of Clients:
+                </td>
+                <td>
+                    @totalClients.ToString()
+                </td>
+                <td></td>
+                <td></td>
+                <td align="right">
+                    Total Fees:
+                </td>
+                <td>
+                    <strong>@totalFees.ToString("c")</strong>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <partial name="_PagingNavBar" />
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}
+

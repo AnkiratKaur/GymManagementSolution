@@ -1,0 +1,17 @@
+﻿@model GymManagement.Models.FitnessCategory
+
+<form asp-controller="FitnessCategory" asp-action="Create" id="createFitnessCategoryForm">
+    <div class="text-danger validation-summary-errors"><ul id="ErrorList"></ul></div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label asp-for="Category" class="control-label"></label>
+                <textarea asp-for="Category" class="form-control"></textarea>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" id="submitFitnessCategoryCreate" class="btn btn-outline-secondary" />
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,149 @@
+﻿@model IEnumerable<GymManagement.Models.Instructor>
+
+<partial name="_ViewHeading" />
+
+@if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+{
+    <p>
+        <a asp-action="Create">Create New @ViewData["ControllerFriendlyName"]</a>
+    </p>
+}
+
+
+<form asp-action="Index" method="get">
+    <input type="hidden" name="sortDirection" value="@ViewData["sortDirection"]" />
+    <input type="hidden" name="sortField" value="@ViewData["sortField"]" />
+    <div class="form-horizontal">
+        <button class="btn @ViewData["Filtering"]" type="button" data-bs-toggle="collapse" id="filterToggle"
+                data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+            Filter/Search @ViewData["numberFilters"]
+        </button><br />
+        <div class="collapse @ViewData["ShowFilter"]" id="collapseFilter">
+            <div class="card card-body bg-light">
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <label class="control-label">Search Instructor Name:</label>
+                        @Html.TextBox("SearchString", null, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="control-label">Search Phone Number:</label>
+                        @Html.TextBox("SearchPhone", null, new { @class = "form-control" })
+                    </div>
+                    <div class=" form-group col-md-3">
+                        <label class="control-label">Filter by Active Status:</label>
+                        @Html.DropDownList("ActiveStatus", new List<SelectListItem>
+                        {
+                            new SelectListItem { Value = "true", Text = "Active" },
+                            new SelectListItem { Value = "false", Text = "Not Active" }
+                        }, "All Instructors", htmlAttributes: new { @class = "form-control" })
+                    </div>
+                    <div class="form-group col-md-2 align-self-end">
+                        <input type="submit" name="actionButton" value="Filter"
+                               class="btn btn-outline-primary" />
+                        <a asp-action="Index" class="btn btn-outline-dark">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <input type="submit" name="actionButton" value="Instructor" class="btn btn-link" />
+                </th>
+                <th>
+                    <input type="submit" name="actionButton" value="Seniority" class="btn btn-link" />
+                </th>
+                <th class="d-none d-md-table-cell">
+                    <input type="submit" name="actionButton" value="Phone" class="btn btn-link" />
+                </th>
+                <th class="d-none d-lg-table-cell">
+                    <input type="submit" name="actionButton" value="Email" class="btn btn-link" />
+                </th>
+                <th class="d-none d-xl-table-cell">
+                    <input type="submit" value="Documents" class="btn btn-toolbar" />
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FormalName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Seniority)
+                        @Html.DisplayFor(modelItem => item.IsActive) Is Active
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        @Html.DisplayFor(modelItem => item.PhoneFormatted)
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td class="d-none d-xl-table-cell">
+                        @{
+                            int fileCount = item.InstructorDocuments.Count;
+                            if (fileCount > 0)
+                            {
+                                var firstFile = item.InstructorDocuments.FirstOrDefault(); ;
+                                if (fileCount > 1)
+                                {
+                                    <a class="" role="button" data-bs-toggle="collapse" href="#collapseDocs@(item.ID)" aria-expanded="false" aria-controls="collapseDocs@(item.ID)">
+                                        <span class="badge bg-info">@fileCount</span> Documents...
+                                    </a>
+                                    <div class="collapse" id="collapseDocs@(item.ID)">
+                                        @{
+                                            foreach (var d in item.InstructorDocuments)
+                                            {
+                                                if (User.IsInRole("Supervisor") || User.IsInRole("Admin"))
+                                                {
+                                                    <a asp-action="Download" asp-route-id="@d.ID">@d.FileName</a> <br />
+                                                }
+                                                else
+                                                {
+                                                    <span>@d.FileName</span> <br />
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a asp-action="Download" asp-route-id="@firstFile?.ID">@firstFile?.FileName</a>
+                                }
+                            }
+                        }
+                    </td>
+
+                    <td>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                            <span>
+                                <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.ID">Details</a>
+                            </span>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span> | </span> <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <partial name="_PagingNavBar" />
+</form>
+@section Scripts {
+    <script type="text/javascript">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}
